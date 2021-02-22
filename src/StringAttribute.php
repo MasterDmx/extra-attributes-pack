@@ -2,7 +2,7 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
-use MasterDmx\LaravelExtraAttributes\Entities\Attribute;
+use MasterDmx\LaravelExtraAttributes\Attribute;
 
 class StringAttribute extends Attribute
 {

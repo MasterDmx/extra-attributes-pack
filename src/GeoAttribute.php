@@ -2,13 +2,14 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
-use MasterDmx\LaravelExtraAttributes\Entities\Attribute;
+use MasterDmx\LaravelExtraAttributes\Contracts\Validateable;
+use MasterDmx\LaravelExtraAttributes\Attribute;
 
 /**
  * GEO аттрибут
  * @version 1.0.0 2020-11-17
  */
-class GeoAttribute extends Attribute
+class GeoAttribute extends Attribute implements Validateable
 {
     /**
      * Регионы
@@ -61,6 +62,21 @@ class GeoAttribute extends Attribute
     public function compare($attribute): bool
     {
         return isset($this->regions) && $this->compareArrays($this->regions, $attribute->regions ?? []) || isset($this->cities) && $this->compareArrays($this->cities, $attribute->cities ?? []);
+    }
+
+    public function isValidRaw($data): bool
+    {
+        return true;
+    }
+
+    public function isValid(): bool
+    {
+        return !empty($this->regions) || !empty($this->cities);
+    }
+
+    public function importRaw($data): void
+    {
+        $this->import($data);
     }
 
     /**

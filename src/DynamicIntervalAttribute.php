@@ -2,6 +2,7 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
+use MasterDmx\LaravelExtraAttributes\Contracts\Validateable;
 use MasterDmx\LaravelHelpers\NumericHelper;
 use MasterDmx\LaravelHelpers\StringHelper;
 
@@ -9,7 +10,7 @@ use MasterDmx\LaravelHelpers\StringHelper;
  * Интервал с динамическими единицами измерения
  * @version 1.0.1 2020-11-17
  */
-class DynamicIntervalAttribute extends IntervalAttribute
+class DynamicIntervalAttribute extends IntervalAttribute implements Validateable
 {
     /**
      * Единица измерения минимального значения
@@ -77,10 +78,10 @@ class DynamicIntervalAttribute extends IntervalAttribute
      * @param string $valuePrefix
      * @param string $unit
      */
-    protected function getTransformatedValue($valuePrefix = 'min', string $unit)
-    {
-        return $this->transformate($this->$valuePrefix, $this->units[$unit]['transformation'] ?? '');
-    }
+    // protected function getTransformatedValue($valuePrefix = 'min', string $unit)
+    // {
+    //     return $this->transformate($this->$valuePrefix, $this->units[$unit]['transformation'] ?? '');
+    // }
 
     /**
      * Вывод единицы измерения

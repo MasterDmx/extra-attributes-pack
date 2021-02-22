@@ -2,14 +2,15 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
-use MasterDmx\LaravelExtraAttributes\Entities\Attribute;
+use MasterDmx\LaravelExtraAttributes\Contracts\Validateable;
+use MasterDmx\LaravelExtraAttributes\Attribute;
 use MasterDmx\LaravelHelpers\NumericHelper;
 
 /**
  * Интервал
  * @version 1.0.1 2020-11-17
  */
-class IntervalAttribute extends Attribute
+class IntervalAttribute extends Attribute implements Validateable
 {
     /**
      * Минимальное значение
@@ -24,13 +25,6 @@ class IntervalAttribute extends Attribute
      * @var int|float
      */
     public $max;
-
-    /**
-     * Пометка
-     *
-     * @var string
-     */
-    public $mark;
 
     /**
      * Паттерны вывода
@@ -223,29 +217,22 @@ class IntervalAttribute extends Attribute
     // Base
     // --------------------------------------------------------
 
-    /**
-     * Сравнение с другим полем
-     *
-     * @return bool
-     */
     public function compare($attribute): bool
     {
         return NumericHelper::compareIntervals($this->min, $this->max, $attribute->min, $attribute->max);
     }
 
-    /**
-     * Импорт значений
-     *
-     * @param array|int|string|double|float $data
-     * @return void
-     */
+    public function importRaw($data): void
+    {
+        $this->import($data);
+    }
+
     public function import($data): void
     {
         parent::import($data);
 
         $this->min = $data['min'] ?? null;
         $this->max = $data['max'] ?? null;
-        $this->mark = $data['mark'] ?? null;
 
         if (isset($data['minRaw'])) {
             $this->min = $this->clearValue($data['minRaw']);
@@ -256,19 +243,23 @@ class IntervalAttribute extends Attribute
         }
     }
 
-    /**
-     * Экспорт значений
-     *
-     * @return array|int|string|double|float
-     */
     public function export()
     {
         return parent::export() + array_filter([
             'min' => $this->min,
             'max' => $this->max,
-            'mark' => $this->mark,
         ], function ($el) {
             return isset($el);
         });
+    }
+
+    public function isValidRaw($data): bool
+    {
+        return true;
+    }
+
+    public function isValid(): bool
+    {
+        return isset($this->min) || isset($this->max);
     }
 }

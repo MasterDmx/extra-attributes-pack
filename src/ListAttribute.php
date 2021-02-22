@@ -2,18 +2,18 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
-use MasterDmx\LaravelExtraAttributes\Entities\Attribute;
-use MasterDmx\LaravelHelpers\ArrayHelper;
+use Illuminate\Support\Arr;
+use MasterDmx\LaravelExtension\Helpers\ArrayHelper;
+use MasterDmx\LaravelExtraAttributes\Contracts\Validateable;
+use MasterDmx\LaravelExtraAttributes\Attribute;
 
 /**
  * Список
  * @version 1.0.1 2020-11-17
  */
-class ListAttribute extends Attribute
+class ListAttribute extends Attribute implements Validateable
 {
     const KEY_VALUES = 'values';
-    const KEY_VALUES_MARKS = 'values_marks';
-    const KEY_MARK = 'mark';
 
     /**
      * Значения
@@ -28,20 +28,6 @@ class ListAttribute extends Attribute
      * @var array|null
      */
     public $handbook;
-
-    /**
-     * Пометка
-     *
-     * @var string|null
-     */
-    public $mark;
-
-    /**
-     * Пометки для значений
-     *
-     * @var array|null
-     */
-    public $valueMarks;
 
     // --------------------------------------------------------
     // Functional
@@ -105,65 +91,49 @@ class ListAttribute extends Attribute
     // Base
     // --------------------------------------------------------
 
-    /**
-     * Сравнение с другим полем
-     *
-     * @return bool
-     */
     public function compare($attribute): bool
     {
         return ArrayHelper::compare($this->values, $attribute->values);
     }
 
-    /**
-     * Инициализация прототипа
-     *
-     * @param array $properties
-     * @return void
-     */
     public function init(array $properties)
     {
         parent::init($properties);
         $this->handbook = $properties['handbook'];
     }
 
-    /**
-     * Импорт значений из массива
-     *
-     * @param array|int|string|double|float $data
-     * @return void
-     */
-    public function import($data): void
+    public function isValidRaw($data): bool
     {
-        parent::import($data);
-
-        $this->values = $data[static::KEY_VALUES] ?? [];
-        $this->mark = $data[static::KEY_MARK] ?? null;
-        $this->valueMarks = $data[static::KEY_VALUES_MARKS] ?? null;
+        return true;
     }
 
-    /**
-     * Экспорт значений
-     *
-     * @return array|int|string|double|float
-     */
+    public function isValid(): bool
+    {
+        return !empty($this->values);
+    }
+
+    public function importRaw($data): void
+    {
+        if (!empty($data[static::KEY_VALUES])) {
+            $this->values = Arr::where($data[static::KEY_VALUES], fn ($el) => isset($el));
+        }
+    }
+
+    public function import($data): void
+    {
+        $this->values     = $data[static::KEY_VALUES] ?? null;
+    }
+
     public function export()
     {
         return parent::export() + array_filter([
             static::KEY_VALUES => $this->values,
-            static::KEY_VALUES_MARKS => $this->valueMarks,
-            static::KEY_MARK => $this->mark,
         ], function ($el) {
             return isset($el);
         });
     }
 
-    /**
-     * Изменить данные по пресету
-     *
-     * @param $data
-     * @return self
-     */
+
     protected function changeUnderPreset(array $data): void
     {
         parent::changeUnderPreset($data);

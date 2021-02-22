@@ -2,39 +2,78 @@
 
 namespace MasterDmx\ExtraAttributesPack;
 
-use MasterDmx\LaravelExtraAttributes\Entities\Attribute;
+use Illuminate\Support\Arr;
+use MasterDmx\LaravelExtraAttributes\Contracts\Validateable;
+use MasterDmx\LaravelExtraAttributes\Attribute;
 
-class PhonesAttribute extends Attribute
+/**
+ * Аттрибут списка телефонных номеров
+ *
+ */
+class PhonesAttribute extends Attribute implements Validateable
 {
+    const KEY_NUMBERS = 'numbers';
+    const KEY_MARKS = 'marks';
+
     /**
-     * Значения
+     * Телефонные номера
      *
      * @var array|null
      */
-    public $values = [];
+    public $numbers;
+
+    /**
+     * Пометки
+     *
+     * @var array|null
+     */
+    public $marks;
 
     // --------------------------------------------------------
     // Base
     // --------------------------------------------------------
 
-    /**
-     * Импорт значений из массива
-     *
-     * @param array|int|string|double|float $data
-     * @return void
-     */
-    public function import($data): void
+    public function isValidRaw($data): bool
     {
-        $this->values = $data ?? [];
+        return true;
     }
 
-    /**
-     * Экспорт значений
-     *
-     * @return array|int|string|double|float
-     */
+    public function isValid(): bool
+    {
+        return !empty($this->numbers);
+    }
+
+    public function importRaw($data): void
+    {
+        if (!empty($data[static::KEY_NUMBERS])) {
+            $this->numbers = array_filter($data[static::KEY_NUMBERS], fn ($el) => !empty($el));
+        }
+
+        if (!empty($data[static::KEY_MARKS])) {
+            foreach ($data[static::KEY_MARKS] as $key => $value) {
+                if (!empty($value) && isset($this->numbers[$key])) {
+                    $this->marks[$key] = $value;
+                }
+            }
+        }
+    }
+
+    public function import($data): void
+    {
+        if (!empty($data[static::KEY_NUMBERS])) {
+            $this->numbers = $data[static::KEY_NUMBERS];
+        }
+
+        if (!empty($data[static::KEY_MARKS])) {
+            $this->marks = $data[static::KEY_MARKS];
+        }
+    }
+
     public function export()
     {
-        return $this->values;
+        return array_filter([
+            'numbers' => $this->numbers,
+            'marks' => $this->marks,
+        ], fn ($el) => isset($el));
     }
 }
